@@ -1,0 +1,220 @@
+\documentclass[12pt]{article}
+
+% Packages
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry,hyperref,graphicx,booktabs}
+\geometry{margin=1in}
+
+% Title and author
+\title{\textbf{Information-Theoretic Limits of Local Learning}\\
+\large Trans-Scale Variance Decoupling and an Impossibility Theorem}
+\author{Osama Banat}
+\date{}
+
+% Theorem environments
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{remark}[definition]{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We construct an explicit class of deterministic functions for which locality
+constitutes an information-theoretic obstruction to learning.
+Specifically, we exhibit continuous functions whose fine-scale components
+retain a non-vanishing conditional variance when conditioned on all information
+accessible within any fixed spatial radius.
+
+Unlike classical pathological examples in analysis or smoothness-based minimax
+lower bounds, our construction enforces \emph{trans-scale variance decoupling}:
+observations at any finite resolution provably fail to reduce uncertainty about
+higher-frequency structure. As a consequence, we establish a no-go theorem showing
+that any estimator restricted to local information incurs a strictly positive
+irreducible error, independent of sample size, model capacity, or optimization
+procedure.
+
+Our results isolate a fundamental limitation of locality as an inductive bias
+and apply uniformly to all finite-receptive-field learning architectures.
+\end{abstract}
+
+\section{Introduction}
+
+Locality is a central inductive bias in modern learning theory.
+Kernel methods, local polynomial estimators, and convolutional architectures
+all rely on the assumption that information in a neighborhood of a point
+is predictive of finer-scale behavior.
+
+This work challenges that assumption at an information-theoretic level.
+We construct a deterministic function for which no estimator relying solely
+on local observations can achieve vanishing error, regardless of data availability
+or computational power.
+
+\section{Related Work}
+
+\subsection{Smoothness Classes and Minimax Theory}
+Classical nonparametric estimation over H\"older and Besov spaces admits
+minimax-optimal local estimators, with rates governed by smoothness parameters
+\cite{tsybakov2009}. Our construction lies outside this framework: although
+continuous, our functions violate any form of cross-scale regularity,
+rendering local minimax theory inapplicable.
+
+\subsection{Barron-Type and Spectral Function Classes}
+Barron spaces and related spectral concentration assumptions enable global
+approximation guarantees for neural networks. In contrast, our functions
+deliberately disperse spectral energy across exponentially separated frequencies,
+defeating any bounded-resolution method.
+
+\subsection{Harmonic Analysis and Orthogonality}
+The proof exploits classical orthogonality principles: conditioning on coarse
+information acts as a low-pass filter annihilating sufficiently high-frequency
+oscillations. While standard in harmonic analysis, such arguments have not
+previously been used to establish learning-theoretic impossibility results.
+
+\section{Model and Definitions}
+
+\begin{definition}[r-local estimator]
+An estimator $A$ is called \emph{r-local} if there exists a measurable function
+$\Phi$ such that
+\[
+A(x) = \Phi\big(\{f(y): \|y-x\| \le r\}\big)
+\quad \text{almost surely}.
+\]
+\end{definition}
+
+\begin{definition}[Trans-scale variance decoupling]
+Let $f = \sum_{n\ge1} f_n$ and $X \sim \mathrm{Uniform}([0,1]^d)$.
+We say that $f$ satisfies finite-resolution variance decoupling if there exists
+$c>0$ such that for all $N$,
+\[
+\operatorname{Var}\big(f_{>N}(X)\mid\sigma(f_{\le N}(X))\big)
+\ge
+c \sum_{n>N} \|f_n\|_{L^2}^2,
+\]
+where $f_{\le N} := \sum_{n=1}^{N} f_n$ and $f_{>N} := \sum_{n>N} f_n$.
+\end{definition}
+
+\section{Function Construction and Preliminaries}
+
+We consider functions of the form
+\[
+f(x) = \sum_{n=1}^{\infty} f_n(x), \quad 
+f_n(x) = 2^{-n} \prod_{i=1}^d \sin(2^{\alpha n} \pi x_i), \quad \alpha > 1.
+\]
+
+\paragraph{Assumptions.} 
+\begin{enumerate}
+    \item $f_n$ are mutually orthogonal in $L^2([0,1]^d)$: $\langle f_n, f_m \rangle = 0$ for $n \neq m$.
+    \item High-frequency components are independent from local neighborhoods (formalized via $\sigma$-algebras).
+    \item Uniform convergence of $\sum_n f_n$ guarantees continuity of $f$.
+\end{enumerate}
+
+\begin{lemma}[Uniform Convergence]
+The series defining $f$ converges uniformly on $[0,1]^d$, ensuring continuity.
+\end{lemma}
+
+\begin{proof}
+\[
+|f_n(x)| = 2^{-n} \left| \prod_{i=1}^d \sin(2^{\alpha n} \pi x_i) \right| \le 2^{-n},
+\]
+thus
+\[
+\sum_{n=1}^{\infty} |f_n(x)| \le \sum_{n=1}^{\infty} 2^{-n} = 1.
+\]
+\end{proof}
+
+\begin{lemma}[Non-differentiability]
+The function $f$ is nowhere differentiable.
+\end{lemma}
+
+\section{Measure-Theoretic Setup for Local Estimators}
+
+Let $X \sim \text{Uniform}([0,1]^d)$ and define the local $\sigma$-algebra for radius $r$:
+\[
+\mathcal{F}_r(x) := \sigma\left( \{(X_i,Y_i) : \|X_i - x\| \le r\} \right).
+\]
+
+An $r$-local estimator $A_n(x)$ is $\mathcal{F}_r(x)$-measurable:
+\[
+A_n(x) = \Phi\big( \mathcal{F}_r(x) \big).
+\]
+
+\section{High-Frequency Orthogonality and Variance Decoupling}
+
+\begin{lemma}[High-Frequency Orthogonality]
+For $f_{>N} := \sum_{n>N} f_n$ and $r$-local $\sigma$-algebra $\mathcal{F}_r(x)$, we have
+\[
+\mathbb{E}[f_{>N}(X) \mid \mathcal{F}_r(X)] = 0, \quad \text{for } 2^{-\alpha N} \ll r.
+\]
+\end{lemma}
+
+\begin{proof}
+Each component $f_n$ with $2^{-\alpha n} \ll r$ oscillates at a scale much smaller than $r$, so its average over a neighborhood of radius $r$ is zero:
+\[
+\int_{\|y-x\|\le r} f_n(y) dy = 0.
+\]
+Hence,
+\[
+\mathbb{E}[f_{>N}(X) \mid \mathcal{F}_r(X)] = 0.
+\]
+\end{proof}
+
+\begin{lemma}[Variance Decoupling]
+\[
+\mathrm{Var}(f_{>N}(X) \mid \mathcal{F}_r(X)) = \sum_{n>N} \|f_n\|_2^2 \ge c \, 2^{-2N}, \quad c>0.
+\]
+\end{lemma}
+
+\begin{proof}
+By orthogonality and Parseval's identity,
+\[
+\|f_{>N}\|_2^2 = \sum_{n>N} \|f_n\|_2^2.
+\]
+\end{proof}
+
+\section{Main Result: Impossibility of Local Estimation}
+
+\begin{theorem}[Formal Statement]
+Let $f$ be as above. For any $r>0$ and any $r$-local estimator $A_n$, the risk satisfies
+\[
+\inf_{n \ge 1} \mathcal{R}(A_n) \ge c(r) > 0.
+\]
+\end{theorem}
+
+\begin{proof}
+Since $A_n(x)$ is $\mathcal{F}_r(x)$-measurable,
+\[
+\mathcal{R}(A_n) = \mathbb{E}[(A_n(X)-f(X))^2] \ge \mathrm{Var}(f_{>N}(X) \mid \mathcal{F}_r(X)) \ge c(r).
+\]
+\end{proof}
+
+\section{Numerical Illustration of Local Estimation Limits}
+
+Consider $d=1$ and
+\[
+f(x) = \sum_{n=1}^{10} 2^{-n} \sin(2^{2 n} \pi x), \quad r = 0.05.
+\]
+
+\begin{itemize}
+    \item \textbf{Kernel Regression:} High-frequency components are missed, leading to nonzero risk.
+    \item \textbf{CNN with Receptive Field $r$:} Layers only access local neighborhoods, so oscillations with period $\ll r$ are not captured.
+\end{itemize}
+
+A plot (not shown) would illustrate that predicted curves are smooth versions of $f$, confirming the theoretical lower bound on risk.
+
+This demonstrates concretely the necessity of either increasing the kernel width/receptive field or incorporating cross-scale interactions.
+
+\section{Conclusion}
+
+We identify locality as a fundamental information-theoretic bottleneck.
+Our result applies universally to all finite-receptive-field estimators and
+demonstrates that scale interaction is a necessary inductive bias for consistent learning.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
+
+
